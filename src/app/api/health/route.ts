@@ -17,7 +17,13 @@ export async function GET() {
     const ready = await ensureSchema();
     await db.execute(sql`select 1`);
     return Response.json({ ok: ready });
-  } catch {
-    return Response.json({ ok: false }, { status: 500 });
+  } catch (error) {
+    return Response.json(
+      {
+        ok: false,
+        reason: error instanceof Error ? error.message : "unknown_database_error",
+      },
+      { status: 500 },
+    );
   }
 }
