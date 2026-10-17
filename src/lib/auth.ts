@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { cookies } from "next/headers";
-import { db } from "@/db";
+import { db, dbConfigured, ensureSchema } from "@/db";
 import { authSessions, users, preferences, sleepSchedules, type User } from "@/db/schema";
 import { eq, and, gt, lt } from "drizzle-orm";
 
@@ -52,8 +52,13 @@ export async function destroySession(): Promise<void> {
   jar.delete(COOKIE_NAME);
 }
 
-/** Returns the signed-in user or null. Also prunes expired sessions lazily. */
+/** Returns the signed-in user or null. Also prunes expired sessions lazily.
+ *  Gracefully degrades to null when the database is not reachable/configured
+ *  so public pages still render instead of erroring. */
 export async function getCurrentUser(): Promise<User | null> {
+  if (!dbConfigured()) return null;
+  const ready = await ensureSchema().catch(() => false);
+  if (!ready) return null;
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
   if (!token) return null;
