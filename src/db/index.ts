@@ -14,7 +14,9 @@ const rawDatabaseUrl =
   process.env.DATABASE_URL ??
   process.env.SUPABASE_DB_URL ??
   process.env.POSTGRES_URL ??
-  process.env.POSTGRES_URL_NON_POOLING;
+  process.env.POSTGRES_URL_NON_POOLING ??
+  process.env.SUPABASE ??
+  process.env["supabase"];
 
 function isLocalHost(url: string): boolean {
   return /(@|\/\/)(localhost|127\.0\.0\.1)(:|\/)/.test(url);

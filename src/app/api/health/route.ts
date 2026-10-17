@@ -9,7 +9,7 @@ export async function GET() {
       return Response.json(
         {
           ok: false,
-          reason: "No database env configured. Supported names: DATABASE_URL, SUPABASE_DB_URL, POSTGRES_URL, POSTGRES_URL_NON_POOLING.",
+          reason: "No database env configured. Supported names: DATABASE_URL, SUPABASE_DB_URL, POSTGRES_URL, POSTGRES_URL_NON_POOLING, SUPABASE, supabase.",
         },
         { status: 500 },
       );
