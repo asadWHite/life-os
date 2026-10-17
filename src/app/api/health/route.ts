@@ -6,7 +6,13 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     if (!dbConfigured()) {
-      return Response.json({ ok: false, reason: "DATABASE_URL not configured" }, { status: 500 });
+      return Response.json(
+        {
+          ok: false,
+          reason: "No database env configured. Supported names: DATABASE_URL, SUPABASE_DB_URL, POSTGRES_URL, POSTGRES_URL_NON_POOLING.",
+        },
+        { status: 500 },
+      );
     }
     const ready = await ensureSchema();
     await db.execute(sql`select 1`);

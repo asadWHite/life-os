@@ -10,18 +10,33 @@ import { MIGRATION_SQL } from "./migration-sql";
 /* import time — builds must succeed before env vars are provisioned.  */
 /* ------------------------------------------------------------------ */
 
-const databaseUrl =
-  process.env.DATABASE_URL ?? process.env.POSTGRES_URL ?? process.env.POSTGRES_URL_NON_POOLING;
+const rawDatabaseUrl =
+  process.env.DATABASE_URL ??
+  process.env.SUPABASE_DB_URL ??
+  process.env.POSTGRES_URL ??
+  process.env.POSTGRES_URL_NON_POOLING;
 
 function isLocalHost(url: string): boolean {
   return /(@|\/\/)(localhost|127\.0\.0\.1)(:|\/)/.test(url);
 }
 
-function connectionString(url: string): string {
-  if (isLocalHost(url)) return url;
-  if (/sslmode=/.test(url)) return url;
-  return url + (url.includes("?") ? "&" : "?") + "sslmode=require";
+function normalizeDatabaseUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    // Vercel/Supabase URLs may include provider-specific hints that should not
+    // be forwarded as PostgreSQL startup parameters.
+    parsed.searchParams.delete("supa");
+    if (!isLocalHost(url) && !parsed.searchParams.has("sslmode")) {
+      parsed.searchParams.set("sslmode", "require");
+    }
+    return parsed.toString();
+  } catch {
+    if (isLocalHost(url) || /sslmode=/.test(url)) return url;
+    return url + (url.includes("?") ? "&" : "?") + "sslmode=require";
+  }
 }
+
+const databaseUrl = rawDatabaseUrl ? normalizeDatabaseUrl(rawDatabaseUrl) : null;
 
 const globalForDb = globalThis as typeof globalThis & {
   __lifeosPool?: Pool;
@@ -31,7 +46,7 @@ const globalForDb = globalThis as typeof globalThis & {
 export const pool = databaseUrl
   ? (globalForDb.__lifeosPool ??
     (globalForDb.__lifeosPool = new Pool({
-      connectionString: connectionString(databaseUrl),
+      connectionString: databaseUrl,
       max: 4,
       idleTimeoutMillis: 20_000,
       connectionTimeoutMillis: 10_000,
