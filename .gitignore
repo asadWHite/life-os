@@ -1,0 +1,27 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# next.js
+.next/
+out/
+build
+
+# production
+*.tsbuildinfo
+next-env.d.ts
+
+# env files — NEVER commit
+.env
+.env*.local
+.env.production
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
+coverage/
+scripts/*.local.*
