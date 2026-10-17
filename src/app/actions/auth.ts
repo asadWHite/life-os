@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { db, dbConfigured, ensureSchema } from "@/db";
 import { users } from "@/db/schema";
 import { hashPassword, verifyPassword, createSession, destroySession, ensureUserRows, deleteAccount } from "@/lib/auth";
@@ -14,6 +15,17 @@ const passwordSchema = z.string().min(8).max(200);
 export interface AuthResult {
   ok: boolean;
   error?: string;
+}
+
+async function setDemoCookie() {
+  const jar = await cookies();
+  jar.set("lifeos_session", "demo-mode-cookie", {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 24 * 30,
+  });
 }
 
 export async function signUp(input: {
@@ -29,11 +41,14 @@ export async function signUp(input: {
   if (!email.success) return { ok: false, error: "auth_error_email" };
   if (!password.success) return { ok: false, error: "auth_error_weak" };
 
-  // Demo Mode: If DB is not configured, allow access
-  if (!dbConfigured()) return { ok: true };
+  // Demo Mode
+  if (!dbConfigured()) {
+    await setDemoCookie();
+    return { ok: true };
+  }
 
-  const ready = await ensureSchema(); // first-ever sign-up on a fresh database bootstraps tables
-  if (!ready) return { ok: false, error: "auth_error_db" }
+  const ready = await ensureSchema();
+  if (!ready) return { ok: false, error: "auth_error_db" };
   const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email.data)).limit(1);
   if (existing[0]) return { ok: false, error: "auth_error_exists" };
 
@@ -59,8 +74,11 @@ export async function signIn(input: { email: string; password: string }): Promis
   const email = emailSchema.safeParse(input.email);
   if (!email.success) return { ok: false, error: "auth_error_invalid" };
 
-  // Demo Mode: If DB is not configured, allow access
-  if (!dbConfigured()) return { ok: true };
+  // Demo Mode
+  if (!dbConfigured()) {
+    await setDemoCookie();
+    return { ok: true };
+  }
 
   const ready = await ensureSchema();
   if (!ready) return { ok: false, error: "auth_error_db" };

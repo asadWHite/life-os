@@ -55,31 +55,33 @@ export async function destroySession(): Promise<void> {
 /** Returns the signed-in user or null. Also prunes expired sessions lazily.
  *  Gracefully degrades to null when the database is not reachable/configured
  *  so public pages still render instead of erroring. */
+const DEMO_USER: User = {
+  id: "00000000-0000-0000-0000-000000000000",
+  email: "demo@lifeos.test",
+  passwordHash: "",
+  firstName: "Asadbek",
+  lastName: "",
+  dateOfBirth: null,
+  lifeStage: "working",
+  language: "uz",
+  timezone: "Asia/Tashkent",
+  appearance: "dark",
+  onboardingStep: 6,
+  onboardingCompleted: true,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 export async function getCurrentUser(): Promise<User | null> {
-  // Demo Mode: If DB is not configured, return a mock user so the UI is visible.
-  if (!dbConfigured()) {
-    return {
-      id: "00000000-0000-0000-0000-000000000000",
-      email: "demo@lifeos.test",
-      passwordHash: "",
-      firstName: "Asadbek",
-      lastName: "(Demo)",
-      dateOfBirth: null,
-      lifeStage: "working",
-      language: "uz",
-      timezone: "Asia/Tashkent",
-      appearance: "dark",
-      onboardingStep: 6,
-      onboardingCompleted: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-  }
+  // Demo Mode: If DB is not configured, always return the demo user.
+  if (!dbConfigured()) return DEMO_USER;
 
   const ready = await ensureSchema().catch(() => false);
   if (!ready) return null;
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
+  // Also allow demo cookie (set when user clicks "Demo login")
+  if (token === "demo-mode-cookie") return DEMO_USER;
   if (!token) return null;
   const tokenHash = sha256(token);
   const rows = await db
