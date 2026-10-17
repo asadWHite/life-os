@@ -52,9 +52,14 @@ export const DEMO_PREFS_DEFAULTS: DemoPrefs = {
 function safeParse<T>(raw: string | undefined, fallback: T): T {
   if (!raw) return fallback;
   try {
-    return { ...fallback, ...(JSON.parse(raw) as object) } as T;
+    const decoded = decodeURIComponent(raw);
+    return { ...fallback, ...(JSON.parse(decoded) as object) } as T;
   } catch {
-    return fallback;
+    try {
+      return { ...fallback, ...(JSON.parse(raw) as object) } as T;
+    } catch {
+      return fallback;
+    }
   }
 }
 
@@ -97,7 +102,7 @@ export async function saveDemoProfilePatch(patch: Partial<DemoProfile>): Promise
   const jar = await cookies();
   const current = await getDemoProfile();
   const next = { ...current, ...patch };
-  jar.set(DEMO_PROFILE_COOKIE, JSON.stringify(next), { path: "/", maxAge: YEAR, sameSite: "lax" });
+  jar.set(DEMO_PROFILE_COOKIE, encodeURIComponent(JSON.stringify(next)), { path: "/", maxAge: YEAR, sameSite: "lax" });
   if (patch.language) {
     jar.set("lifeos_lang", patch.language, { path: "/", maxAge: YEAR, sameSite: "lax" });
   }
@@ -107,5 +112,5 @@ export async function saveDemoPrefsPatch(patch: Partial<DemoPrefs>): Promise<voi
   const jar = await cookies();
   const current = await getDemoPrefs();
   const next = { ...current, ...patch };
-  jar.set(DEMO_PREFS_COOKIE, JSON.stringify(next), { path: "/", maxAge: YEAR, sameSite: "lax" });
+  jar.set(DEMO_PREFS_COOKIE, encodeURIComponent(JSON.stringify(next)), { path: "/", maxAge: YEAR, sameSite: "lax" });
 }
