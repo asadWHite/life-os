@@ -23,6 +23,26 @@ export default async function PlanPage({ searchParams }: { searchParams: Promise
   const weekStart = addDays(selected, -wd);
   const weekEnd = addDays(weekStart, 6);
 
+  if (!db) {
+    return (
+      <PlanView
+        today={today}
+        selected={selected}
+        weekDates={Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))}
+        railCounts={{ [today]: 1 }}
+        tasks={[
+          { id: "1", title: "Dizaynni ko'rish", description: "", status: "pending", priority: "high", dueDate: today, startTime: null, reminderMinutes: null, goalId: null, suggested: false }
+        ]}
+        habits={[
+          { id: "h1", name: "Kitob o'qish", description: "", frequency: "daily", targetPerWeek: 7, weekCount: 3, doneOnSelected: false }
+        ]}
+        goals={[
+          { id: "g1", name: "Salomatlik", description: "Sog'lom turmush tarzi", status: "active", targetDate: null, linkedTotal: 5, linkedDone: 2 }
+        ]}
+      />
+    );
+  }
+
   const [dayTasks, userHabits, weekCompletions, userGoals, goalTasksAll] = await Promise.all([
     db
       .select()

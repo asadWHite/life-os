@@ -21,6 +21,44 @@ export default async function TodayPage() {
   const tomorrow = addDays(today, 1);
   const weekAgo = addDays(today, -90);
 
+  // Demo Mode: Mock data if DB is not configured
+  if (!db) {
+    return (
+      <TodayView
+        name={user.firstName}
+        greeting="Xayrli kun"
+        dateHuman={formatDateHuman(today, "uz-UZ")}
+        today={today}
+        tz={user.timezone}
+        tasks={[
+          { id: "1", title: "Dizaynni ko'rib chiqish", description: "Life OS interfeysini o'rganish", status: "pending", priority: "high", dueDate: today, startTime: "10:00", reminderMinutes: 15, goalId: null, suggested: false },
+          { id: "2", title: "Vazifa qo'shishni sinash", description: "", status: "completed", priority: "normal", dueDate: today, startTime: null, reminderMinutes: null, goalId: null, suggested: false }
+        ]}
+        overdue={[]}
+        goals={[{ id: "g1", name: "Salomatlik" }]}
+        habits={[
+          { id: "h1", name: "Kitob o'qish", doneToday: true },
+          { id: "h2", name: "Ertalabki badantarbiya", doneToday: false }
+        ]}
+        score={0.75}
+        doneCount={1}
+        totalCount={2}
+        brain={["brain_light_day"]}
+        sleep={{
+          last: { durationMinutes: 460, targetMinutes: 480, startedAt: new Date(Date.now() - 86400000).toISOString(), endedAt: null },
+          active: null,
+          targetBedtime: "23:00",
+          targetWake: "07:00"
+        }}
+        focus={{
+          session: null,
+          taskOptions: [{ id: "1", title: "Dizaynni ko'rib chiqish" }],
+          tomorrow
+        }}
+      />
+    );
+  }
+
   const [rangeTasks, activeHabits, todayHabitRows, lastSleep, activeSleep, schedule, focusRows, userGoals] =
     await Promise.all([
       db

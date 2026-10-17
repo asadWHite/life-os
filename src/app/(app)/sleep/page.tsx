@@ -15,6 +15,24 @@ export default async function SleepPage() {
   if (!user) redirect("/sign-in");
   if (!user.onboardingCompleted) redirect("/onboarding");
 
+  if (!db) {
+    return (
+      <SleepView
+        schedule={{ bedtime: "23:00", wake: "07:00", weekdays: [1,2,3,4,5,6,0], remindBedtime: true, targetMinutes: 480 }}
+        active={null}
+        history={[
+          { id: "s1", startedAt: new Date(Date.now() - 86400000).toISOString(), endedAt: new Date(Date.now() - 86400000 + 28000000).toISOString(), durationMinutes: 460, state: "completed" },
+          { id: "s2", startedAt: new Date(Date.now() - 172800000).toISOString(), endedAt: new Date(Date.now() - 172800000 + 30000000).toISOString(), durationMinutes: 500, state: "completed" }
+        ]}
+        recKeys={["rec_consistent_bedtime"]}
+        avgMinutes={480}
+        tz={user.timezone}
+        dict={getDict(user.language)}
+        locale={LOCALE_TAGS[user.language as Locale] ?? "uz-UZ"}
+      />
+    );
+  }
+
   const [scheduleRow, activeRow, history, prefs] = await Promise.all([
     db.select().from(sleepSchedules).where(eq(sleepSchedules.userId, user.id)).limit(1),
     db

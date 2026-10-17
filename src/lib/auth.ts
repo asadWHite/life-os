@@ -56,7 +56,26 @@ export async function destroySession(): Promise<void> {
  *  Gracefully degrades to null when the database is not reachable/configured
  *  so public pages still render instead of erroring. */
 export async function getCurrentUser(): Promise<User | null> {
-  if (!dbConfigured()) return null;
+  // Demo Mode: If DB is not configured, return a mock user so the UI is visible.
+  if (!dbConfigured()) {
+    return {
+      id: "00000000-0000-0000-0000-000000000000",
+      email: "demo@lifeos.test",
+      passwordHash: "",
+      firstName: "Asadbek",
+      lastName: "(Demo)",
+      dateOfBirth: null,
+      lifeStage: "working",
+      language: "uz",
+      timezone: "Asia/Tashkent",
+      appearance: "dark",
+      onboardingStep: 6,
+      onboardingCompleted: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+  }
+
   const ready = await ensureSchema().catch(() => false);
   if (!ready) return null;
   const jar = await cookies();

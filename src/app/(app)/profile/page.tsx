@@ -12,6 +12,35 @@ export default async function ProfilePage() {
   if (!user) redirect("/sign-in");
   if (!user.onboardingCompleted) redirect("/onboarding");
 
+  if (!db) {
+    return (
+      <ProfileView
+        user={{
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          lifeStage: user.lifeStage ?? "working",
+          language: user.language,
+          timezone: user.timezone,
+          appearance: user.appearance,
+          memberSince: "2024-01-01",
+        }}
+        prefs={{
+          interests: ["education", "fitness"],
+          challenges: ["time", "focus"],
+          wakeTime: "07:00",
+          bedTime: "23:00",
+          workHours: "morning",
+          freeTime: "2-4h",
+          planningStyle: "structured",
+          phoneMorning: false,
+          phoneBed: true,
+          phoneReduce: true,
+        }}
+      />
+    );
+  }
+
   const [prefs] = await db.select().from(preferences).where(eq(preferences.userId, user.id)).limit(1);
   const phone = (prefs?.phoneHabits ?? {}) as Record<string, boolean | null>;
 
