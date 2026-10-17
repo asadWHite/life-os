@@ -3,10 +3,9 @@
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { db } from "@/db";
+import { db, dbConfigured, ensureSchema } from "@/db";
 import { users } from "@/db/schema";
 import { hashPassword, verifyPassword, createSession, destroySession, ensureUserRows, deleteAccount } from "@/lib/auth";
-import { ensureSchema } from "@/db";
 import { requireUser } from "./helpers";
 
 const emailSchema = z.string().trim().toLowerCase().email().max(200);
@@ -29,8 +28,10 @@ export async function signUp(input: {
   const password = passwordSchema.safeParse(input.password);
   if (!email.success) return { ok: false, error: "auth_error_email" };
   if (!password.success) return { ok: false, error: "auth_error_weak" };
+  if (!dbConfigured()) return { ok: false, error: "auth_error_db" };
 
-  await ensureSchema(); // first-ever sign-up on a fresh database bootstraps tables
+  const ready = await ensureSchema(); // first-ever sign-up on a fresh database bootstraps tables
+  if (!ready) return { ok: false, error: "auth_error_db" }
   const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email.data)).limit(1);
   if (existing[0]) return { ok: false, error: "auth_error_exists" };
 
@@ -55,7 +56,9 @@ export async function signUp(input: {
 export async function signIn(input: { email: string; password: string }): Promise<AuthResult> {
   const email = emailSchema.safeParse(input.email);
   if (!email.success) return { ok: false, error: "auth_error_invalid" };
-  await ensureSchema();
+  if (!dbConfigured()) return { ok: false, error: "auth_error_db" };
+  const ready = await ensureSchema();
+  if (!ready) return { ok: false, error: "auth_error_db" };
   const [user] = await db.select().from(users).where(eq(users.email, email.data)).limit(1);
   if (!user || !verifyPassword(input.password, user.passwordHash)) {
     return { ok: false, error: "auth_error_invalid" };

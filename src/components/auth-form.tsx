@@ -3,13 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Lamp } from "lucide-react";
+import { AlertTriangle, Lamp } from "lucide-react";
 import { signIn, signUp } from "@/app/actions/auth";
 import { useI18n } from "./i18n-provider";
 import { Button, Field, Input } from "./ui";
 import type { Dict } from "@/lib/i18n/dictionaries";
 
-export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
+export function AuthForm({ mode, dbReady }: { mode: "sign-in" | "sign-up"; dbReady?: boolean }) {
   const { t, ts, lang } = useI18n();
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -74,6 +74,20 @@ export function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <h1 className="text-[22px] font-bold tracking-[-0.02em]">
           {mode === "sign-in" ? t.auth_signin_title : t.auth_signup_title}
         </h1>
+
+        {dbReady === false && (
+          <div className="mt-4 rounded-2xl border border-warning/25 bg-warning-bg px-4 py-3 text-[12.5px] leading-relaxed text-warning">
+            <div className="flex items-start gap-2">
+              <AlertTriangle size={14} className="mt-[2px] shrink-0" />
+              <div>
+                <p className="font-semibold">{t.auth_setup_note}</p>
+                <a href="/api/health" className="mt-1 inline-block font-bold underline underline-offset-2">
+                  /api/health
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={onSubmit} className="mt-6 flex flex-col gap-4">
           {mode === "sign-up" && (
