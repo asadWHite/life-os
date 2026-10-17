@@ -1,92 +1,179 @@
 "use client";
 
-/* Life OS focus lamp — signature illustration in the dedicated palette:
-   deep slate #202833 · dark #151B23 · warm #FF633C · glow #FFB16A.
-   Two deliberate states: dormant (dim, monochromatic) and lit (controlled
-   warm glow + light cone). Motion is restrained: a slow 4.5s breathe. */
+import { cn } from "@/lib/cn";
 
-export function LampArt({ active, reduceMotion = false }: { active: boolean; reduceMotion?: boolean }) {
+/* 
+   Life OS focus lamp — realistic visual redesign.
+   Matches the premium product-render aesthetic of the reference.
+   Colors:
+   #151B23 (Primary Dark)
+   #202833 (Secondary Dark)
+   #FF633C (Orange Accent)
+   #FFB16A (Warm Light)
+*/
+
+export function LampArt({ 
+  active, 
+  reduceMotion = false,
+  className 
+}: { 
+  active: boolean; 
+  reduceMotion?: boolean;
+  className?: string;
+}) {
   return (
     <svg
-      viewBox="0 0 320 340"
-      role="img"
-      aria-label={active ? "Focus lamp — on" : "Focus lamp — off"}
-      className="h-auto w-full max-w-[300px]"
+      viewBox="0 0 400 450"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={cn("w-full h-auto drop-shadow-2xl", className)}
       style={{ overflow: "visible" }}
     >
       <defs>
-        <radialGradient id="lamp-glow" cx="50%" cy="46%" r="55%">
-          <stop offset="0%" stopColor="#FF633C" stopOpacity="0.5" />
-          <stop offset="38%" stopColor="#FF8A5C" stopOpacity="0.22" />
+        {/* Metallic body gradient */}
+        <linearGradient id="lamp_body_grad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#2D3748" />
+          <stop offset="50%" stopColor="#1A202C" />
+          <stop offset="100%" stopColor="#0F172A" />
+        </linearGradient>
+
+        {/* Highlight for metallic edges */}
+        <linearGradient id="edge_highlight" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="white" stopOpacity="0.15" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
+        </linearGradient>
+
+        {/* Inner lampshade glow */}
+        <radialGradient id="inner_shade_glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFB16A" stopOpacity="0.8" />
+          <stop offset="70%" stopColor="#FF633C" stopOpacity="0.2" />
           <stop offset="100%" stopColor="#FF633C" stopOpacity="0" />
         </radialGradient>
-        <linearGradient id="lamp-cone" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFB16A" stopOpacity="0.34" />
-          <stop offset="70%" stopColor="#FFB16A" stopOpacity="0.06" />
+
+        {/* Directional beam */}
+        <linearGradient id="light_beam_grad" x1="50%" y1="0%" x2="50%" y2="100%">
+          <stop offset="0%" stopColor="#FFB16A" stopOpacity="0.4" />
           <stop offset="100%" stopColor="#FFB16A" stopOpacity="0" />
         </linearGradient>
-        <radialGradient id="lamp-pool" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFB16A" stopOpacity="0.5" />
-          <stop offset="100%" stopColor="#FFB16A" stopOpacity="0" />
-        </radialGradient>
-        <radialGradient id="bulb-core" cx="42%" cy="38%" r="72%">
-          <stop offset="0%" stopColor="#FFF3E4" />
-          <stop offset="55%" stopColor="#FFB16A" />
-          <stop offset="100%" stopColor="#FF633C" />
-        </radialGradient>
-        <filter id="soft-blur" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="7" />
+
+        {/* Orange Accent Gradient */}
+        <linearGradient id="orange_accent_grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#FF8A65" />
+          <stop offset="50%" stopColor="#FF633C" />
+          <stop offset="100%" stopColor="#E64A19" />
+        </linearGradient>
+
+        <filter id="soft_glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="15" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+
+        <filter id="beam_blur">
+          <feGaussianBlur stdDeviation="8" />
         </filter>
       </defs>
 
-      {/* ambient glow — only when lit */}
-      <g
-        style={{
-          opacity: active ? 1 : 0,
-          transition: "opacity 900ms ease",
-          animation: active && !reduceMotion ? "glow-pulse 4.5s ease-in-out infinite" : undefined,
-        }}
+      {/* --- BEAM OF LIGHT (Only when active) --- */}
+      <g 
+        className={cn(
+          "transition-opacity duration-700 ease-in-out",
+          active ? "opacity-100" : "opacity-0"
+        )}
       >
-        <ellipse cx="160" cy="170" rx="150" ry="135" fill="url(#lamp-glow)" />
-        <path d="M131 152 L189 152 L236 302 L84 302 Z" fill="url(#lamp-cone)" filter="url(#soft-blur)" />
-        <ellipse cx="160" cy="300" rx="86" ry="13" fill="url(#lamp-pool)" />
+        {/* Large atmospheric glow */}
+        <ellipse 
+          cx="200" cy="180" rx="140" ry="120" 
+          fill="#FFB16A" 
+          fillOpacity="0.08" 
+          filter="url(#soft_glow)" 
+        />
+        
+        {/* Directional beam from shade */}
+        <path 
+          d="M130 180 L270 180 L360 420 L40 420 Z" 
+          fill="url(#light_beam_grad)" 
+          filter="url(#beam_blur)"
+          className={cn(!reduceMotion && "animate-pulse")}
+          style={{ animationDuration: '4s' }}
+        />
       </g>
 
-      {/* floor shadow */}
-      <ellipse cx="160" cy="312" rx="64" ry="7" fill="#0E1218" opacity="0.9" />
+      {/* --- BASE --- */}
+      <g>
+        {/* Main base volume */}
+        <rect x="120" y="380" width="160" height="24" rx="12" fill="url(#lamp_body_grad)" />
+        <rect x="120" y="380" width="160" height="2" rx="1" fill="url(#edge_highlight)" />
+        
+        {/* Bottom shadow/contact */}
+        <rect x="130" y="404" width="140" height="4" rx="2" fill="black" fillOpacity="0.4" />
+      </g>
 
-      {/* base */}
-      <rect x="118" y="296" width="84" height="15" rx="7.5" fill="#202833" stroke="#2D3746" strokeWidth="1" />
-      <rect x="132" y="300.5" width="56" height="3" rx="1.5" fill="#151B23" opacity="0.8" />
+      {/* --- ARM --- */}
+      <g>
+        {/* Main curved support */}
+        <path 
+          d="M200 380 Q 200 280 180 150" 
+          stroke="url(#lamp_body_grad)" 
+          strokeWidth="14" 
+          strokeLinecap="round" 
+        />
+        {/* Arm edge highlight */}
+        <path 
+          d="M194 370 Q 194 280 174 155" 
+          stroke="white" 
+          strokeOpacity="0.05" 
+          strokeWidth="2" 
+          strokeLinecap="round" 
+        />
+      </g>
 
-      {/* stem */}
-      <rect x="155.5" y="158" width="9" height="140" rx="4.5" fill="#202833" stroke="#2D3746" strokeWidth="0.75" />
-      {/* neck hinge */}
-      <circle cx="160" cy="152" r="9" fill="#202833" stroke="#2D3746" strokeWidth="0.75" />
+      {/* --- HEAD / JOINT --- */}
+      <g>
+        {/* Neck connector */}
+        <circle cx="180" cy="150" r="10" fill="#1A202C" />
+        <circle cx="180" cy="150" r="10" stroke="white" strokeOpacity="0.1" />
+      </g>
 
-      {/* dome shade — half-moon opening downward */}
-      <path
-        d="M116 152 A 44 44 0 0 1 204 152 Z"
-        fill="#202833"
-        stroke={active ? "#3A4556" : "#2D3746"}
-        strokeWidth="1.25"
-      />
-      <path d="M124 140 A 36 36 0 0 1 160 116" fill="none" stroke="#2D3746" strokeWidth="1.4" strokeLinecap="round" opacity="0.8" />
-      {/* shade rim */}
-      <rect x="114" y="150" width="92" height="5" rx="2.5" fill="#151B23" stroke="#2D3746" strokeWidth="0.75" />
+      {/* --- LAMPSHADE --- */}
+      <g transform="translate(180, 150) rotate(-10)">
+        {/* Outer Surface */}
+        <path 
+          d="M-70 15 C-70 -40 70 -40 70 15 L85 45 C85 55 -85 55 -85 45 Z" 
+          fill="url(#lamp_body_grad)" 
+        />
+        {/* Outer Rim Highlight */}
+        <path 
+          d="M-84 45 C-84 54 84 54 84 45" 
+          stroke="white" 
+          strokeOpacity="0.1" 
+          strokeWidth="1" 
+        />
 
-      {/* bulb */}
-      <circle
-        cx="160"
-        cy="163"
-        r="12"
-        fill={active ? "url(#bulb-core)" : "#39424E"}
-        style={{ transition: "fill 600ms ease" }}
-      />
-      {active && <circle cx="160" cy="163" r="19" fill="#FFB16A" opacity="0.28" filter="url(#soft-blur)" />}
+        {/* Inner Surface Illumination */}
+        <g className={cn("transition-opacity duration-500", active ? "opacity-100" : "opacity-0")}>
+           <path 
+            d="M-65 15 C-65 -30 65 -30 65 15 L78 40 C78 48 -78 48 -78 40 Z" 
+            fill="url(#inner_shade_glow)" 
+          />
+        </g>
 
-      {/* dormant indicator dot */}
-      <circle cx="160" cy="163" r={active ? 0 : 3.2} fill="#55627480" style={{ transition: "all 600ms ease" }} />
+        {/* TOP ACCENT (The Orange Ring) */}
+        <path 
+          d="M-15 -32 Q 0 -42 15 -32" 
+          stroke="url(#orange_accent_grad)" 
+          strokeWidth="6" 
+          strokeLinecap="round"
+          className={cn("transition-all duration-700", active ? "drop-shadow-[0_0_8px_#FF633C]" : "")}
+        />
+      </g>
+
+      {/* --- BULB (Visible when active) --- */}
+      <g 
+        transform="translate(185, 175)"
+        className={cn("transition-opacity duration-300", active ? "opacity-100" : "opacity-0")}
+      >
+        <circle r="12" fill="#FFF3E4" filter="url(#soft_glow)" />
+      </g>
     </svg>
   );
 }

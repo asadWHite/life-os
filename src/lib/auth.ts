@@ -46,15 +46,12 @@ export async function createSession(userId: string): Promise<void> {
 export async function destroySession(): Promise<void> {
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
-  if (token) {
+  if (token && token !== "demo-mode-cookie" && db) {
     await db.delete(authSessions).where(eq(authSessions.tokenHash, sha256(token)));
   }
   jar.delete(COOKIE_NAME);
 }
 
-/** Returns the signed-in user or null. Also prunes expired sessions lazily.
- *  Gracefully degrades to null when the database is not reachable/configured
- *  so public pages still render instead of erroring. */
 const DEMO_USER: User = {
   id: "00000000-0000-0000-0000-000000000000",
   email: "demo@lifeos.test",
@@ -71,6 +68,10 @@ const DEMO_USER: User = {
   createdAt: new Date(),
   updatedAt: new Date(),
 };
+
+export function isDemoUser(user: User): boolean {
+  return user.id === DEMO_USER.id;
+}
 
 export async function getCurrentUser(): Promise<User | null> {
   // Demo Mode: If DB is not configured, always return the demo user.
@@ -104,6 +105,7 @@ export async function ensureUserRows(userId: string): Promise<void> {
 }
 
 export async function deleteAccount(userId: string): Promise<void> {
+  if (!db) return; // demo mode guard
   await db.delete(users).where(eq(users.id, userId)); // cascades all user data
   const jar = await cookies();
   jar.delete(COOKIE_NAME);

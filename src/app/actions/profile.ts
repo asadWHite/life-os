@@ -4,9 +4,10 @@ import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { db } from "@/db";
+import { db, dbConfigured } from "@/db";
 import { users, preferences } from "@/db/schema";
 import { requireUser, ok, fail, type ActionResult } from "./helpers";
+import { isDemoUser } from "@/lib/auth";
 
 const INTERESTS = ["education", "languages", "career", "fitness", "reading", "development", "creative", "routines", "productivity"];
 const CHALLENGES = ["time", "studying", "sleep", "procrastination", "exercise", "focus", "planning"];
@@ -21,6 +22,14 @@ export async function updateIdentity(raw: { firstName: string; lastName?: string
     })
     .safeParse(raw);
   if (!parsed.success) return fail("invalid");
+
+  // Demo mode — accept the input but don't touch DB
+  if (isDemoUser(user) || !dbConfigured()) {
+    revalidatePath("/profile");
+    revalidatePath("/today");
+    return ok();
+  }
+
   await db
     .update(users)
     .set({
@@ -52,6 +61,19 @@ export async function updateSettings(raw: {
 }): Promise<ActionResult> {
   const user = await requireUser();
   const timeRe = /^\d{2}:\d{2}$/;
+
+  // Demo mode — accept all changes silently (they won't persist across refresh,
+  // but the UI will react immediately via router.refresh + revalidatePath).
+  if (isDemoUser(user) || !dbConfigured()) {
+    // Still set language cookie so UI picks up the change
+    if (raw.language && ["uz", "en", "ru"].includes(raw.language)) {
+      const jar = await cookies();
+      jar.set("lifeos_lang", raw.language, { path: "/", maxAge: 60 * 60 * 24 * 365 });
+    }
+    revalidatePath("/profile");
+    revalidatePath("/today");
+    return ok();
+  }
 
   const userPatch: Partial<typeof users.$inferInsert> = { updatedAt: new Date() };
   if (raw.language && ["uz", "en", "ru"].includes(raw.language)) userPatch.language = raw.language;

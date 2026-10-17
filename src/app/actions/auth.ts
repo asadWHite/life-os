@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { db, dbConfigured, ensureSchema } from "@/db";
 import { users } from "@/db/schema";
-import { hashPassword, verifyPassword, createSession, destroySession, ensureUserRows, deleteAccount } from "@/lib/auth";
+import { hashPassword, verifyPassword, createSession, destroySession, ensureUserRows, deleteAccount, isDemoUser } from "@/lib/auth";
 import { requireUser } from "./helpers";
 
 const emailSchema = z.string().trim().toLowerCase().email().max(200);
@@ -92,12 +92,24 @@ export async function signIn(input: { email: string; password: string }): Promis
 }
 
 export async function signOut(): Promise<void> {
+  // In demo mode, just clear the cookie — no DB call
+  if (!dbConfigured()) {
+    const jar = await cookies();
+    jar.delete("lifeos_session");
+    redirect("/");
+  }
   await destroySession();
   redirect("/");
 }
 
 export async function deleteMyAccount(): Promise<void> {
   const user = await requireUser();
+  // In demo mode, just clear cookie and redirect
+  if (isDemoUser(user) || !dbConfigured()) {
+    const jar = await cookies();
+    jar.delete("lifeos_session");
+    redirect("/");
+  }
   await deleteAccount(user.id);
   redirect("/");
 }

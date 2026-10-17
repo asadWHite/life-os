@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Trash2, Pencil, Check, X, ShieldCheck } from "lucide-react";
+import { LogOut, Trash2, Pencil, Check, X, ShieldCheck, RotateCcw } from "lucide-react";
 import { updateIdentity, updateSettings } from "@/app/actions/profile";
 import { signOut, deleteMyAccount } from "@/app/actions/auth";
 import { useI18n } from "./i18n-provider";
@@ -43,26 +43,67 @@ interface PrefsDto {
   phoneReduce: boolean | null;
 }
 
+/* =====================================================================
+   Helper: apply appearance class to <html> immediately (client-side).
+   This fixes BUG #3 where the theme didn't update until full reload.
+   ===================================================================== */
+function applyAppearance(mode: string) {
+  if (typeof document === "undefined") return;
+  const html = document.documentElement;
+  if (mode === "dark") {
+    html.classList.add("dark");
+  } else if (mode === "light") {
+    html.classList.remove("dark");
+  } else {
+    // system
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    html.classList.toggle("dark", prefersDark);
+  }
+  html.dataset.appearance = mode;
+}
+
 export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto }) {
   const { t, locale } = useI18n();
   const toast = useToast();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
 
-  /* identity editing */
+  /* ----------- Identity editing (BUG #5 fix: Cancel restores originals) ----------- */
   const [editing, setEditing] = useState(false);
   const [firstName, setFirstName] = useState(user.firstName);
   const [lastName, setLastName] = useState(user.lastName);
   const [lifeStage, setLifeStage] = useState(user.lifeStage);
 
-  const initials = `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() || "·";
+  // Sync local state when server props change (e.g. after router.refresh())
+  useEffect(() => {
+    if (!editing) {
+      setFirstName(user.firstName);
+      setLastName(user.lastName);
+      setLifeStage(user.lifeStage);
+    }
+  }, [user.firstName, user.lastName, user.lifeStage, editing]);
+
+  const cancelEditing = () => {
+    // BUG #5 FIX: Reset to server values, not stale local state
+    setFirstName(user.firstName);
+    setLastName(user.lastName);
+    setLifeStage(user.lifeStage);
+    setEditing(false);
+  };
+
+  const initials = `${(firstName || "")[0] ?? ""}${(lastName || "")[0] ?? ""}`.toUpperCase() || "·";
   const memberSince = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
     new Date(user.memberSince + "T12:00:00Z"),
   );
 
   const saveIdentity = () =>
     startTransition(async () => {
-      const res = await updateIdentity({ firstName: firstName.trim(), lastName: lastName.trim(), lifeStage: lifeStage || undefined });
+      const trimmedFirst = firstName.trim();
+      if (!trimmedFirst) {
+        toast.push(t.auth_first_name + " — " + t.required, "error");
+        return;
+      }
+      const res = await updateIdentity({ firstName: trimmedFirst, lastName: lastName.trim(), lifeStage: lifeStage || undefined });
       if (res.ok) {
         setEditing(false);
         toast.push(t.profile_saved);
@@ -70,13 +111,33 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
       } else toast.push(t.toast_error, "error");
     });
 
+  /* ----------- Settings save with instant client-side effects ----------- */
   const saveSettings = (patch: Parameters<typeof updateSettings>[0], msg = t.prefs_saved) =>
     startTransition(async () => {
+      // BUG #3 FIX: Apply appearance immediately on client before server round-trip
+      if (patch.appearance) {
+        applyAppearance(patch.appearance);
+      }
+
       const res = await updateSettings(patch);
       if (res.ok) {
         toast.push(msg);
+
+        // BUG #4 FIX: For language changes, force a full page reload to reload the layout
+        // because the I18nProvider in the server layout caches the dictionary.
+        if (patch.language) {
+          window.location.reload();
+          return;
+        }
+
         router.refresh();
-      } else toast.push(t.toast_error, "error");
+      } else {
+        // Revert appearance if save failed
+        if (patch.appearance) {
+          applyAppearance(user.appearance);
+        }
+        toast.push(t.toast_error, "error");
+      }
     });
 
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -128,7 +189,7 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
             <div className="mt-4 flex flex-col gap-3 animate-rise">
               <div className="grid grid-cols-2 gap-3">
                 <Field label={t.auth_first_name}>
-                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} maxLength={60} />
+                  <Input value={firstName} onChange={(e) => setFirstName(e.target.value)} maxLength={60} autoFocus />
                 </Field>
                 <Field label={t.auth_last_name}>
                   <Input value={lastName} onChange={(e) => setLastName(e.target.value)} maxLength={60} />
@@ -147,7 +208,7 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
                 <Button variant="primary" size="sm" onClick={saveIdentity} busy={pending}>
                   <Check size={14} /> {t.save}
                 </Button>
-                <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
+                <Button variant="ghost" size="sm" onClick={cancelEditing}>
                   <X size={14} /> {t.cancel}
                 </Button>
               </div>
@@ -155,7 +216,7 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
           ) : (
             <>
               <h2 className="mt-3 text-[20px] font-bold tracking-[-0.02em]">
-                {firstName} {lastName}
+                {user.firstName} {user.lastName}
               </h2>
               <p className="text-[13px] text-ink-3">{user.email}</p>
               <div className="mt-2.5 flex flex-wrap gap-2 text-[11.5px] font-medium text-ink-3">
@@ -203,7 +264,7 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
         <div className="mt-4">
           <Field label={t.timezone_label}>
             <select
-              defaultValue={user.timezone}
+              value={user.timezone}
               onChange={(e) => saveSettings({ timezone: e.target.value })}
               className="w-full rounded-xl border border-line bg-raised px-3.5 py-2.5 text-[14px] text-ink focus:outline-none sm:max-w-[300px]"
             >
@@ -302,6 +363,12 @@ function PrefChips({
 }) {
   const { t } = useI18n();
   const [values, setValues] = useState<string[]>(selected);
+
+  // Sync with server values when props update
+  useEffect(() => {
+    setValues(selected);
+  }, [selected]);
+
   const dirty =
     values.length !== selected.length || values.some((v) => !selected.includes(v));
   return (
@@ -318,9 +385,14 @@ function PrefChips({
         ))}
       </div>
       {dirty && (
-        <Button size="sm" variant="primary" onClick={() => onSave(values)} className="animate-scale-in">
-          <Check size={13.5} /> {t.save}
-        </Button>
+        <div className="flex items-center gap-2 animate-scale-in">
+          <Button size="sm" variant="primary" onClick={() => onSave(values)}>
+            <Check size={13.5} /> {t.save}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setValues(selected)}>
+            <RotateCcw size={12} /> {t.cancel}
+          </Button>
+        </div>
       )}
     </div>
   );
@@ -340,6 +412,24 @@ function RhythmForm({
   const [bed, setBed] = useState(prefs.bedTime);
   const [work, setWork] = useState(prefs.workHours);
   const [free, setFree] = useState(prefs.freeTime);
+
+  // Sync from server when props update
+  useEffect(() => {
+    setWake(prefs.wakeTime);
+    setBed(prefs.bedTime);
+    setWork(prefs.workHours);
+    setFree(prefs.freeTime);
+  }, [prefs.wakeTime, prefs.bedTime, prefs.workHours, prefs.freeTime]);
+
+  const dirty = wake !== prefs.wakeTime || bed !== prefs.bedTime || work !== prefs.workHours || free !== prefs.freeTime;
+
+  const reset = () => {
+    setWake(prefs.wakeTime);
+    setBed(prefs.bedTime);
+    setWork(prefs.workHours);
+    setFree(prefs.freeTime);
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
@@ -368,10 +458,15 @@ function RhythmForm({
           ))}
         </div>
       </Field>
-      <div>
+      <div className="flex items-center gap-2">
         <Button variant="primary" size="sm" busy={saving} onClick={() => onSave({ wakeTime: wake, bedTime: bed, workHours: work, freeTime: free })}>
           <Check size={13.5} /> {t.save}
         </Button>
+        {dirty && (
+          <Button variant="ghost" size="sm" onClick={reset}>
+            <RotateCcw size={12} /> {t.cancel}
+          </Button>
+        )}
       </div>
     </div>
   );
