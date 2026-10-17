@@ -25,3 +25,4 @@ next-env.d.ts
 *.pem
 coverage/
 scripts/*.local.*
+.env*
