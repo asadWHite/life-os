@@ -133,7 +133,58 @@ export function AuthForm({ mode, dbReady }: { mode: "sign-in" | "sign-up"; dbRea
             {mode === "sign-in" ? t.auth_signup_cta : t.auth_signin_cta}
           </Link>
         </p>
+
+        <div className="mt-6 border-t border-line pt-5">
+          <p className="mb-3 text-center text-[11.5px] font-semibold uppercase tracking-[0.08em] text-ink-3">
+            Demo
+          </p>
+          <DemoButton />
+        </div>
       </div>
     </main>
+  );
+}
+
+function DemoButton() {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
+
+  const enter = async () => {
+    setBusy(true);
+    try {
+      // Demo: just call signIn with any credentials — server returns ok:true in Demo Mode
+      const { signIn } = await import("@/app/actions/auth");
+      const res = await signIn({ email: "demo@lifeos.test", password: "demo1234" });
+      if (res.ok) router.replace("/today");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={enter}
+      disabled={busy}
+      className="group relative w-full overflow-hidden rounded-2xl border border-dashed border-line-strong bg-sunken/60 px-5 py-4 text-left transition-all hover:border-accent/40 hover:bg-sunken active:scale-[0.98] disabled:opacity-60"
+    >
+      <div className="flex items-center gap-3">
+        <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent/10 text-accent">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+            <polyline points="10 17 15 12 10 7" />
+            <line x1="15" y1="12" x2="3" y2="12" />
+          </svg>
+        </div>
+        <div className="flex-1">
+          <p className="text-[14px] font-semibold text-ink">Demo rejimida kirish</p>
+          <p className="text-[12px] text-ink-3">Baza kerak emas — dizaynni ko'ring</p>
+        </div>
+        {busy && (
+          <svg className="animate-spin text-ink-3" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+          </svg>
+        )}
+      </div>
+    </button>
   );
 }
