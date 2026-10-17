@@ -8,6 +8,7 @@ import { db, dbConfigured } from "@/db";
 import { users, preferences } from "@/db/schema";
 import { requireUser, ok, fail, type ActionResult } from "./helpers";
 import { isDemoUser } from "@/lib/auth";
+import { saveDemoProfilePatch, saveDemoPrefsPatch } from "@/lib/demo";
 
 const INTERESTS = ["education", "languages", "career", "fitness", "reading", "development", "creative", "routines", "productivity"];
 const CHALLENGES = ["time", "studying", "sleep", "procrastination", "exercise", "focus", "planning"];
@@ -62,16 +63,28 @@ export async function updateSettings(raw: {
   const user = await requireUser();
   const timeRe = /^\d{2}:\d{2}$/;
 
-  // Demo mode — accept all changes silently (they won't persist across refresh,
-  // but the UI will react immediately via router.refresh + revalidatePath).
+  // Demo mode — persist to cookies so refresh/layout/theme/lang work
   if (isDemoUser(user) || !dbConfigured()) {
-    // Still set language cookie so UI picks up the change
-    if (raw.language && ["uz", "en", "ru"].includes(raw.language)) {
-      const jar = await cookies();
-      jar.set("lifeos_lang", raw.language, { path: "/", maxAge: 60 * 60 * 24 * 365 });
-    }
+    const profilePatch: Parameters<typeof saveDemoProfilePatch>[0] = {};
+    const prefsPatch: Parameters<typeof saveDemoPrefsPatch>[0] = {};
+    if (raw.language && ["uz", "en", "ru"].includes(raw.language)) profilePatch.language = raw.language as "uz" | "en" | "ru";
+    if (raw.appearance && ["light", "dark", "system"].includes(raw.appearance)) profilePatch.appearance = raw.appearance as "light" | "dark" | "system";
+    if (raw.timezone) profilePatch.timezone = raw.timezone;
+    if (raw.interests) prefsPatch.interests = raw.interests.filter((i) => INTERESTS.includes(i));
+    if (raw.challenges) prefsPatch.challenges = raw.challenges.filter((c) => CHALLENGES.includes(c));
+    if (raw.wakeTime && timeRe.test(raw.wakeTime)) prefsPatch.wakeTime = raw.wakeTime;
+    if (raw.bedTime && timeRe.test(raw.bedTime)) prefsPatch.bedTime = raw.bedTime;
+    if (raw.workHours) prefsPatch.workHours = raw.workHours.slice(0, 20);
+    if (raw.freeTime) prefsPatch.freeTime = raw.freeTime.slice(0, 10);
+    if (raw.planningStyle) prefsPatch.planningStyle = raw.planningStyle.slice(0, 20);
+    if (raw.phoneMorning !== undefined) prefsPatch.phoneMorning = raw.phoneMorning;
+    if (raw.phoneBed !== undefined) prefsPatch.phoneBed = raw.phoneBed;
+    if (raw.phoneReduce !== undefined) prefsPatch.phoneReduce = raw.phoneReduce;
+    if (Object.keys(profilePatch).length) await saveDemoProfilePatch(profilePatch);
+    if (Object.keys(prefsPatch).length) await saveDemoPrefsPatch(prefsPatch);
     revalidatePath("/profile");
     revalidatePath("/today");
+    revalidatePath("/sleep");
     return ok();
   }
 

@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { cookies } from "next/headers";
 import { db, dbConfigured, ensureSchema } from "@/db";
 import { authSessions, users, preferences, sleepSchedules, type User } from "@/db/schema";
+import { getDemoUser } from "@/lib/demo";
 import { eq, and, gt, lt } from "drizzle-orm";
 
 const COOKIE_NAME = "lifeos_session";
@@ -82,7 +83,7 @@ export async function getCurrentUser(): Promise<User | null> {
   const jar = await cookies();
   const token = jar.get(COOKIE_NAME)?.value;
   // Also allow demo cookie (set when user clicks "Demo login")
-  if (token === "demo-mode-cookie") return DEMO_USER;
+  if (token === "demo-mode-cookie") return getDemoUser();
   if (!token) return null;
   const tokenHash = sha256(token);
   const rows = await db

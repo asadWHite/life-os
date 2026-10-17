@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { sleepSchedules, sleepSessions, preferences } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
+import { getDemoPrefs } from "@/lib/demo";
 import { sleepRecommendations } from "@/lib/sleep";
 import { getDict } from "@/lib/i18n";
 import { LOCALE_TAGS, type Locale } from "@/lib/i18n/dictionaries";
@@ -16,9 +17,10 @@ export default async function SleepPage() {
   if (!user.onboardingCompleted) redirect("/onboarding");
 
   if (!db) {
+    const prefs = await getDemoPrefs();
     return (
       <SleepView
-        schedule={{ bedtime: "23:00", wake: "07:00", weekdays: [1,2,3,4,5,6,0], remindBedtime: true, targetMinutes: 480 }}
+        schedule={{ bedtime: prefs.bedTime, wake: prefs.wakeTime, weekdays: [1,2,3,4,5,6,0], remindBedtime: true, targetMinutes: 480 }}
         active={null}
         history={[
           { id: "s1", startedAt: new Date(Date.now() - 86400000).toISOString(), endedAt: new Date(Date.now() - 86400000 + 28000000).toISOString(), durationMinutes: 460, state: "completed" },

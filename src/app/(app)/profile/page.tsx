@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/db";
 import { preferences } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
+import { getDemoPrefs } from "@/lib/demo";
 import { ProfileView } from "@/components/profile-view";
 
 export const dynamic = "force-dynamic";

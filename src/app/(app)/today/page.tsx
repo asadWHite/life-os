@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gt, gte, isNull, ne } from "drizzle-orm";
 import { db } from "@/db";
 import { tasks, habits, habitCompletions, sleepSessions, sleepSchedules, focusSessions, goals } from "@/db/schema";
 import { getCurrentUser } from "@/lib/auth";
+import { getDemoPrefs } from "@/lib/demo";
 import { redirect } from "next/navigation";
 import { todayInTz, formatDateHuman, hourInTz, addDays } from "@/lib/dates";
 import { tasksByDay, dayScore } from "@/lib/stats";

@@ -111,31 +111,62 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
       } else toast.push(t.toast_error, "error");
     });
 
+  // optimistic, visual state for controlled settings
+  const [language, setLanguage] = useState(user.language);
+  const [appearance, setAppearance] = useState(user.appearance);
+  const [timezone, setTimezone] = useState(user.timezone);
+  const [phoneMorning, setPhoneMorning] = useState<boolean | null>(prefs.phoneMorning);
+  const [phoneBed, setPhoneBed] = useState<boolean | null>(prefs.phoneBed);
+  const [phoneReduce, setPhoneReduce] = useState<boolean | null>(prefs.phoneReduce);
+
+  useEffect(() => {
+    setLanguage(user.language);
+    setAppearance(user.appearance);
+    setTimezone(user.timezone);
+  }, [user.language, user.appearance, user.timezone]);
+
+  useEffect(() => {
+    setPhoneMorning(prefs.phoneMorning);
+    setPhoneBed(prefs.phoneBed);
+    setPhoneReduce(prefs.phoneReduce);
+  }, [prefs.phoneMorning, prefs.phoneBed, prefs.phoneReduce]);
+
   /* ----------- Settings save with instant client-side effects ----------- */
   const saveSettings = (patch: Parameters<typeof updateSettings>[0], msg = t.prefs_saved) =>
     startTransition(async () => {
-      // BUG #3 FIX: Apply appearance immediately on client before server round-trip
+      const prevAppearance = appearance;
+      const prevLanguage = language;
+      const prevTimezone = timezone;
+      const prevPhoneMorning = phoneMorning;
+      const prevPhoneBed = phoneBed;
+      const prevPhoneReduce = phoneReduce;
+
+      if (patch.language) setLanguage(patch.language);
       if (patch.appearance) {
+        setAppearance(patch.appearance);
         applyAppearance(patch.appearance);
       }
+      if (patch.timezone) setTimezone(patch.timezone);
+      if (patch.phoneMorning !== undefined) setPhoneMorning(patch.phoneMorning);
+      if (patch.phoneBed !== undefined) setPhoneBed(patch.phoneBed);
+      if (patch.phoneReduce !== undefined) setPhoneReduce(patch.phoneReduce);
 
       const res = await updateSettings(patch);
       if (res.ok) {
         toast.push(msg);
-
-        // BUG #4 FIX: For language changes, force a full page reload to reload the layout
-        // because the I18nProvider in the server layout caches the dictionary.
         if (patch.language) {
           window.location.reload();
           return;
         }
-
         router.refresh();
       } else {
-        // Revert appearance if save failed
-        if (patch.appearance) {
-          applyAppearance(user.appearance);
-        }
+        setAppearance(prevAppearance);
+        setLanguage(prevLanguage);
+        setTimezone(prevTimezone);
+        setPhoneMorning(prevPhoneMorning);
+        setPhoneBed(prevPhoneBed);
+        setPhoneReduce(prevPhoneReduce);
+        if (patch.appearance) applyAppearance(user.appearance);
         toast.push(t.toast_error, "error");
       }
     });
@@ -251,7 +282,7 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
           </Field>
           <Field label={t.appearance}>
             <Segmented
-              value={user.appearance}
+              value={appearance}
               onChange={(v) => saveSettings({ appearance: v })}
               options={[
                 { value: "light", label: t.appearance_light },
@@ -264,11 +295,11 @@ export function ProfileView({ user, prefs }: { user: UserDto; prefs: PrefsDto })
         <div className="mt-4">
           <Field label={t.timezone_label}>
             <select
-              value={user.timezone}
+              value={timezone}
               onChange={(e) => saveSettings({ timezone: e.target.value })}
               className="w-full rounded-xl border border-line bg-raised px-3.5 py-2.5 text-[14px] text-ink focus:outline-none sm:max-w-[300px]"
             >
-              {(TIMEZONES.includes(user.timezone) ? TIMEZONES : [user.timezone, ...TIMEZONES]).map((tz) => (
+              {(TIMEZONES.includes(timezone) ? TIMEZONES : [timezone, ...TIMEZONES]).map((tz) => (
                 <option key={tz} value={tz}>
                   {tz}
                 </option>
