@@ -21,9 +21,11 @@ export const users = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     email: text("email").notNull().unique(),
-    passwordHash: text("password_hash").notNull(),
+    passwordHash: text("password_hash").notNull().default(""),
+    googleId: text("google_id").unique(),
     firstName: text("first_name").notNull().default(""),
     lastName: text("last_name").notNull().default(""),
+    avatarUrl: text("avatar_url"),
     dateOfBirth: date("date_of_birth"),
     lifeStage: text("life_stage"), // school | university | working | other
     language: text("language").notNull().default("uz"), // uz | en | ru

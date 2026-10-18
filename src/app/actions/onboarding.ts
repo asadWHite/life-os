@@ -95,7 +95,12 @@ export async function completeOnboarding(): Promise<ActionResult> {
     .limit(1);
   if (existing.length === 0 && prefs?.interests?.length) {
     const today = todayInTz(user.timezone);
-    const suggestions = suggestionsFor(prefs.interests, prefs.wakeTime);
+    const suggestions = suggestionsFor(prefs.interests, prefs.wakeTime, {
+      lifeStage: user.lifeStage,
+      workHours: prefs.workHours,
+      freeTime: prefs.freeTime,
+      challenges: prefs.challenges,
+    });
     if (suggestions.length) {
       await db.insert(tasks).values(
         suggestions.map((s) => ({

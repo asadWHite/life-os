@@ -67,6 +67,8 @@ const uz = {
   auth_error_email: "To'g'ri email kiriting.",
   auth_error_db: "Hozircha ro'yxatdan o'tib bo'lmaydi: production bazasi ulanmagan. Aniq sababni /api/health sahifasida ko'ring.",
   auth_setup_note: "Eslatma: production ma'lumotlar bazasi ulanmagan bo'lsa, bu deployda ro'yxatdan o'tish ishlamaydi.",
+  auth_google: "Google bilan davom etish",
+  auth_or: "yoki",
 
   ob_step_of: "{n}/{total}-qadam",
   ob_personal_title: "Siz bilan tanishaylik",
@@ -422,6 +424,8 @@ const en: Dict = {
   auth_error_email: "Enter a valid email address.",
   auth_error_db: "Sign-up is blocked right now because the production database is not connected yet. Check /api/health for the exact reason.",
   auth_setup_note: "Note: if the production database is not connected yet, sign-up will not work on this deployment.",
+  auth_google: "Continue with Google",
+  auth_or: "or",
 
   ob_step_of: "Step {n} of {total}",
   ob_personal_title: "Let's get to know you",
@@ -773,6 +777,8 @@ const ru: Dict = {
   auth_error_email: "Введите корректный email.",
   auth_error_db: "Регистрация сейчас недоступна: production-база данных ещё не подключена. /api/health показывает подходящие имена env-переменных.",
   auth_setup_note: "Примечание: если production-база ещё не подключена, регистрация на этом деплое работать не будет.",
+  auth_google: "Продолжить через Google",
+  auth_or: "или",
 
   ob_step_of: "Шаг {n} из {total}",
   ob_personal_title: "Давайте познакомимся",

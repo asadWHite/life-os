@@ -84,6 +84,8 @@ export async function getDemoUser(): Promise<User> {
     id: "00000000-0000-0000-0000-000000000000",
     email: "demo@lifeos.test",
     passwordHash: "",
+    googleId: null,
+    avatarUrl: null,
     firstName: p.firstName,
     lastName: p.lastName,
     dateOfBirth: null,

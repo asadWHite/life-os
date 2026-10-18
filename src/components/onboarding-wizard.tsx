@@ -265,15 +265,23 @@ export function OnboardingWizard({ initial }: { initial: OnboardingData }) {
                   <Input type="time" value={d.bedTime} onChange={(e) => setD({ ...d, bedTime: e.target.value })} />
                 </Field>
               </div>
-              <Field label={t.ob_work_hours}>
-                <div className="flex flex-wrap gap-2">
-                  {(["morning", "afternoon", "evening", "varies"] as const).map((w) => (
-                    <Chip key={w} active={d.workHours === w} onClick={() => setD({ ...d, workHours: w })}>
-                      {t[`wh_${w}` as const]}
-                    </Chip>
-                  ))}
-                </div>
-              </Field>
+
+              {/* Only show work/busy hours question if not a school student
+                  (school students have fixed hours already known) */}
+              {d.lifeStage !== "school" && (
+                <Field label={
+                  d.lifeStage === "university" ? "Darslar qachon?" : t.ob_work_hours
+                }>
+                  <div className="flex flex-wrap gap-2">
+                    {(["morning", "afternoon", "evening", "varies"] as const).map((w) => (
+                      <Chip key={w} active={d.workHours === w} onClick={() => setD({ ...d, workHours: w })}>
+                        {t[`wh_${w}` as const]}
+                      </Chip>
+                    ))}
+                  </div>
+                </Field>
+              )}
+
               <Field label={t.ob_free_time}>
                 <div className="flex flex-wrap gap-2">
                   {(["lt1", "1-2h", "2-4h", "4h+"] as const).map((f) => (
