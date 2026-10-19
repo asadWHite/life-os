@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CheckCircle2, Moon, Lamp, ChartLine, ArrowRight } from "lucide-react";
+import { CheckCircle2, Moon, Zap, ChartLine, ArrowRight } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getDict, getLocaleForAnon } from "@/lib/i18n";
 import { LOCALE_TAGS } from "@/lib/i18n/dictionaries";
@@ -20,7 +20,7 @@ export default async function HomePage() {
   const features = [
     { icon: CheckCircle2, title: dict.feat_1_t, desc: dict.feat_1_d },
     { icon: Moon, title: dict.feat_2_t, desc: dict.feat_2_d },
-    { icon: Lamp, title: dict.feat_3_t, desc: dict.feat_3_d },
+    { icon: Zap, title: dict.feat_3_t, desc: dict.feat_3_d },
     { icon: ChartLine, title: dict.feat_4_t, desc: dict.feat_4_d },
   ];
 
@@ -41,7 +41,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-ink">
-                <Lamp size={18} strokeWidth={2} />
+                <Zap size={18} strokeWidth={2} />
               </div>
               <span className="text-[15px] font-bold tracking-[-0.01em]">{dict.app_name}</span>
             </div>

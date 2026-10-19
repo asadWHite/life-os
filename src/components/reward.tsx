@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
-import { Footprints, Flame, Zap, CalendarCheck, MoonStar, Target, Lamp, type LucideIcon } from "lucide-react";
+import { Footprints, Flame, Zap, CalendarCheck, MoonStar, Target, type LucideIcon } from "lucide-react";
 import type { AchievementDef } from "@/lib/achievements";
 import { useI18n } from "./i18n-provider";
 import type { Dict } from "@/lib/i18n/dictionaries";
@@ -13,7 +13,7 @@ const ICONS: Record<string, LucideIcon> = {
   "calendar-check": CalendarCheck,
   "moon-star": MoonStar,
   target: Target,
-  lamp: Lamp,
+  lamp: Zap,
 };
 
 type Unlock = Pick<AchievementDef, "code" | "icon" | "nameKey" | "descKey">;

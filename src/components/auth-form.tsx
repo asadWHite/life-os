@@ -3,7 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AlertTriangle, Lamp, Loader2 } from "lucide-react";
+import { AlertTriangle, Zap, Loader2 } from "lucide-react";
 import { signIn, signUp } from "@/app/actions/auth";
 import { useI18n } from "./i18n-provider";
 import { Button, Field, Input } from "./ui";
@@ -105,7 +105,7 @@ export function AuthForm({ mode, dbReady }: { mode: "sign-in" | "sign-up"; dbRea
       <div className="card relative w-full max-w-[400px] p-8 animate-rise">
         <Link href="/" className="mb-7 flex items-center gap-2.5">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-accent-ink">
-            <Lamp size={18} />
+            <Zap size={18} />
           </div>
           <span className="text-[15px] font-bold">{t.app_name}</span>
         </Link>

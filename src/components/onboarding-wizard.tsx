@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Lamp, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Zap, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { saveOnboardingStep, completeOnboarding } from "@/app/actions/onboarding";
 import { useI18n } from "./i18n-provider";
 import { Button, Chip, Field, Input, Segmented } from "./ui";
@@ -146,7 +146,7 @@ export function OnboardingWizard({ initial }: { initial: OnboardingData }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-accent-ink">
-              <Lamp size={15} />
+              <Zap size={15} />
             </div>
             <span className="text-[13px] font-bold">{t.app_name}</span>
           </div>

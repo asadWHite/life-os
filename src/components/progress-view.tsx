@@ -8,7 +8,6 @@ import {
   Zap,
   MoonStar,
   Target,
-  Lamp,
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
@@ -27,7 +26,7 @@ const ACH_ICONS: Record<string, LucideIcon> = {
   "calendar-check": CalendarCheck,
   "moon-star": MoonStar,
   target: Target,
-  lamp: Lamp,
+  lamp: Zap,
 };
 
 interface AchievementItem {

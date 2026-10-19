@@ -12,6 +12,9 @@ import {
   ChevronDown,
   AlarmClockCheck,
   CalendarPlus2,
+  Clock,
+  Target,
+  Zap,
 } from "lucide-react";
 import { toggleHabitCompletion } from "@/app/actions/habits";
 import { startSleep, endSleep } from "@/app/actions/sleep";
@@ -24,7 +27,6 @@ import { useReward } from "./reward";
 import { ScoreRing, EmptyState, Badge } from "./ui";
 import { QuickAdd, TaskItem } from "./tasks/task-list";
 import { TaskForm, resolveTitle, type TaskDto } from "./tasks/task-form";
-import { FocusLamp } from "./lamp/focus-lamp";
 import { cn } from "@/lib/cn";
 
 export interface TodayHabit {
@@ -92,12 +94,21 @@ export function TodayView({
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [reviewOpen, setReviewOpen] = useState(false);
-  const [newTaskOpen, setNewTaskOpen] = useState(false);
 
   const pendingTasks = tasks.filter((x) => x.status !== "completed");
   const doneTasks = tasks.filter((x) => x.status === "completed");
   const priorities = pendingTasks.filter((x) => x.priority === "high");
   const completedHabits = habits.filter((h) => h.doneToday).length;
+
+  // Sort tasks by startTime for TimeFlow timeline
+  const timelineTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      if (!a.startTime && !b.startTime) return 0;
+      if (!a.startTime) return 1;
+      if (!b.startTime) return -1;
+      return a.startTime.localeCompare(b.startTime);
+    });
+  }, [tasks]);
 
   const toggleHabit = (habitId: string) => {
     startTransition(async () => {
@@ -147,12 +158,6 @@ export function TodayView({
     return { kind: "done" as const, status, minutes: sleep.last.durationMinutes, target: sleep.last.targetMinutes };
   }, [sleep]);
 
-  const elapsedSleep = useMemo(() => {
-    if (!sleep.active) return "";
-    return formatDuration(Math.max(0, Math.round((Date.now() - new Date(sleep.active.startedAt).getTime()) / 60000)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sleep.active?.startedAt]);
-
   const brainText: Record<string, string> = {
     brain_overdue: t.brain_overdue,
     brain_too_many: t.brain_too_many,
@@ -160,108 +165,123 @@ export function TodayView({
     brain_light_day: t.brain_light_day,
   };
 
+  const nowHour = new Date().getHours();
+  const nowTime = `${String(nowHour).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`;
+
   return (
-    <div className="flex flex-col gap-5">
-      {/* header */}
+    <div className="flex flex-col gap-6">
+      {/* ── Header ── */}
       <header className="flex items-end justify-between gap-4">
         <div>
-          <h1 className="text-[26px] font-bold tracking-[-0.025em] md:text-[30px]">
+          <h1 className="text-[28px] font-bold tracking-[-0.03em] md:text-[34px]">
             {greeting}, {name}
           </h1>
-          <p className="mt-1 text-[13.5px] font-medium text-ink-3">{dateHuman}</p>
+          <p className="mt-1 text-[14px] font-medium text-ink-3">{dateHuman}</p>
         </div>
         <ScoreRing value={score} label={t.day_score} />
       </header>
 
-      {/* quick add */}
+      {/* ── Quick Add ── */}
       <QuickAdd date={today} />
 
-      {/* brain — transparent, rules-based */}
+      {/* ── Brain recommendations ── */}
       {brain.length > 0 && (
-        <div className="card flex items-start gap-3 rounded-2xl border-amber-500/0 p-4 animate-rise">
+        <div className="card flex items-start gap-3 p-4 animate-rise">
           <div className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-warning-bg text-warning">
             <Sparkles size={15} />
           </div>
-          <div className="text-[13px] leading-relaxed text-ink-2">
-            <span className="mr-1.5 font-semibold text-ink">{t.brain_title}</span>
+          <p className="text-[13px] leading-relaxed text-ink-2">
+            <span className="mr-1 font-semibold text-ink">{t.brain_title}</span>
             {brain.map((key) => brainText[key]).filter(Boolean).join(" ")}
-          </div>
+          </p>
         </div>
       )}
 
-      {/* focus lamp */}
-      <FocusLamp session={focus.session} taskOptions={focus.taskOptions} today={today} tz={tz} />
-
-      {/* priorities */}
-      {priorities.length > 0 && (
-        <section className="card p-5 animate-rise">
-          <h2 className="mb-3 flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.09em] text-ink-3">
-            <Sun size={14} /> {t.today_priorities}
-          </h2>
-          <div className="flex flex-col divide-y divide-line/60">
-            {priorities.map((task) => (
-              <TaskItem key={task.id} task={task} today={today} goals={goals} />
-            ))}
+      {/* ══════════════ TimeFlow Timeline ══════════════ */}
+      <section className="card overflow-hidden animate-rise">
+        <div className="flex items-center justify-between border-b border-line px-5 py-3.5">
+          <div className="flex items-center gap-2">
+            <Zap size={16} className="text-accent" />
+            <h2 className="text-[14px] font-bold tracking-[-0.01em]">TimeFlow</h2>
           </div>
-        </section>
-      )}
-
-      {/* today's tasks */}
-      <section className="card p-5 animate-rise">
-        <div className="mb-1.5 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.09em] text-ink-3">
-            <ClipboardList size={14} /> {t.today_tasks}
-          </h2>
           <span className="text-[12px] font-semibold tabular-nums text-ink-3">
             {doneCount}/{totalCount} · {t.stats_done}
           </span>
         </div>
 
-        {overdue.length > 0 && (
-          <div className="mt-3">
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-warning">{t.overdue}</p>
-            <div className="flex flex-col divide-y divide-line/60">
-              {overdue.map((task) => (
-                <TaskItem key={task.id} task={task} today={today} overdue goals={goals} />
-              ))}
-            </div>
-          </div>
-        )}
+        <div className="relative px-5 py-4">
+          {/* vertical timeline line */}
+          {timelineTasks.length > 0 && <div className="tf-timeline-line" />}
 
-        {pendingTasks.length === 0 && doneTasks.length === 0 && overdue.length === 0 ? (
-          <EmptyState
-            icon={<CheckCircle2 size={20} />}
-            title={t.empty_tasks_title}
-            sub={t.empty_tasks_sub}
-          />
-        ) : (
-          <div className="mt-1 flex flex-col divide-y divide-line/60">
-            {pendingTasks.filter((x) => x.priority !== "high").map((task) => (
-              <TaskItem key={task.id} task={task} today={today} goals={goals} />
-            ))}
-          </div>
-        )}
-
-        {doneTasks.length > 0 && (
-          <div className="mt-3">
-            <p className="mb-1 text-[11px] font-bold uppercase tracking-[0.1em] text-success">{t.completed_section}</p>
-            <div className="flex flex-col divide-y divide-line/60 opacity-90">
-              {doneTasks.map((task) => (
-                <TaskItem key={task.id} task={task} today={today} goals={goals} />
-              ))}
+          {/* Overdue tasks */}
+          {overdue.length > 0 && (
+            <div className="mb-4 ml-10">
+              <p className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-danger">{t.overdue}</p>
+              <div className="flex flex-col gap-1">
+                {overdue.map((task) => (
+                  <TaskItem key={task.id} task={task} today={today} overdue goals={goals} />
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+
+          {/* Timeline items */}
+          {timelineTasks.length === 0 && overdue.length === 0 ? (
+            <EmptyState
+              icon={<Clock size={20} />}
+              title={t.empty_tasks_title}
+              sub={t.empty_tasks_sub}
+            />
+          ) : (
+            <div className="flex flex-col gap-1">
+              {timelineTasks.map((task) => {
+                const isNow = task.startTime && task.startTime <= nowTime && task.status !== "completed";
+                const isPast = task.startTime && task.startTime < nowTime && task.status === "completed";
+                return (
+                  <div key={task.id} className="relative flex items-start gap-3">
+                    {/* Timeline dot */}
+                    <div className="relative z-10 mt-3 flex h-10 w-10 shrink-0 items-center justify-center">
+                      {isNow ? (
+                        <div className="tf-now-dot" />
+                      ) : (
+                        <div className={cn(
+                          "h-3 w-3 rounded-full border-2",
+                          task.status === "completed"
+                            ? "border-success bg-success"
+                            : "border-line-strong bg-raised"
+                        )} />
+                      )}
+                    </div>
+                    {/* Time label */}
+                    <div className="mt-2.5 w-[52px] shrink-0 text-right">
+                      <span className={cn(
+                        "text-[12px] font-semibold tabular-nums",
+                        isNow ? "text-accent" : "text-ink-3"
+                      )}>
+                        {task.startTime ?? "—"}
+                      </span>
+                    </div>
+                    {/* Task card */}
+                    <div className="min-w-0 flex-1 pb-1">
+                      <TaskItem task={task} today={today} goals={goals} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </section>
 
+      {/* ── Two-column: Habits + Sleep ── */}
       <div className="grid gap-5 md:grid-cols-2">
-        {/* habits */}
+        {/* Habits */}
         <section className="card p-5 animate-rise">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[13px] font-bold uppercase tracking-[0.09em] text-ink-3">{t.habits_today}</h2>
-            <Link href="/plan" className="text-[12px] font-semibold text-ink-3 transition-colors hover:text-ink">
-              {t.see_all}
-            </Link>
+            <h2 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.09em] text-ink-3">
+              <Target size={14} /> {t.habits_today}
+            </h2>
+            <Link href="/plan" className="text-[12px] font-semibold text-ink-3 hover:text-ink">{t.see_all}</Link>
           </div>
           {habits.length === 0 ? (
             <p className="py-4 text-[13px] text-ink-3">{t.habits_empty}</p>
@@ -274,16 +294,14 @@ export function TodayView({
                   disabled={pending}
                   aria-pressed={h.doneToday}
                   className={cn(
-                    "flex items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all duration-200 active:scale-[0.98]",
+                    "flex items-center gap-3 rounded-2xl border px-3.5 py-3 text-left transition-all active:scale-[0.98]",
                     h.doneToday ? "border-success/30 bg-success-bg/60" : "border-line hover:border-line-strong",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "grid h-6 w-6 shrink-0 place-items-center rounded-full border-[1.6px] transition-all",
-                      h.doneToday ? "border-success bg-success text-white" : "border-line-strong text-transparent",
-                    )}
-                  >
+                  <span className={cn(
+                    "grid h-6 w-6 shrink-0 place-items-center rounded-full border-[1.6px] transition-all",
+                    h.doneToday ? "border-success bg-success text-white" : "border-line-strong text-transparent",
+                  )}>
                     <CheckCircle2 size={13} strokeWidth={3} />
                   </span>
                   <span className={cn("text-[14px] font-medium", h.doneToday && "text-ink-2 line-through decoration-ink-3/40")}>
@@ -298,33 +316,28 @@ export function TodayView({
           )}
         </section>
 
-        {/* sleep mini */}
+        {/* Sleep mini */}
         <section className="card p-5 animate-rise">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-[0.09em] text-ink-3">
               <Moon size={14} /> {t.sleep_card}
             </h2>
-            <Link href="/sleep" className="text-[12px] font-semibold text-ink-3 transition-colors hover:text-ink">
-              {t.see_all}
-            </Link>
+            <Link href="/sleep" className="text-[12px] font-semibold text-ink-3 hover:text-ink">{t.see_all}</Link>
           </div>
 
           {sleepInfo.kind === "active" ? (
             <div>
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#FF633C] opacity-60" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#FF633C]" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
                 </span>
                 <span className="text-[14px] font-semibold">{t.sleeping_now}</span>
               </div>
-              <p className="mt-1 text-[12.5px] tabular-nums text-ink-3">
-                {t.elapsed}: {elapsedSleep}
-              </p>
               <button
                 onClick={onEndSleep}
                 disabled={pending}
-                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-accent text-[13.5px] font-semibold text-accent-ink transition-all hover:brightness-110 active:scale-[0.97] disabled:opacity-50"
+                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full bg-accent text-[13.5px] font-semibold text-accent-ink transition-all hover:brightness-110 active:scale-[0.97]"
               >
                 <AlarmClockCheck size={16} /> {t.woke_up}
               </button>
@@ -336,23 +349,18 @@ export function TodayView({
                   <p className="text-[24px] font-bold tabular-nums tracking-[-0.02em]">
                     {formatDuration(sleepInfo.minutes)}
                   </p>
-                  <p className="text-[12px] text-ink-3">
-                    {t.col_target}: {formatDuration(sleepInfo.target)}
-                  </p>
+                  <p className="text-[12px] text-ink-3">{t.col_target}: {formatDuration(sleepInfo.target)}</p>
                 </div>
-                <Badge
-                  tone={sleepInfo.status === "green" ? "success" : sleepInfo.status === "yellow" ? "warning" : "danger"}
-                >
+                <Badge tone={sleepInfo.status === "green" ? "success" : sleepInfo.status === "yellow" ? "warning" : "danger"}>
                   {sleepInfo.status === "green" ? t.status_green : sleepInfo.status === "yellow" ? t.status_yellow : t.status_red}
                 </Badge>
               </div>
               <button
                 onClick={onStartSleep}
                 disabled={pending}
-                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-line bg-raised text-[13.5px] font-medium text-ink transition-all hover:border-line-strong active:scale-[0.97] disabled:opacity-50"
+                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-line bg-raised text-[13.5px] font-medium text-ink transition-all hover:border-line-strong active:scale-[0.97]"
               >
                 <Moon size={15} /> {t.start_sleep}
-                {sleep.targetBedtime && <span className="ml-1 tabular-nums text-ink-3">· {sleep.targetBedtime}</span>}
               </button>
             </div>
           ) : (
@@ -361,17 +369,16 @@ export function TodayView({
               <button
                 onClick={onStartSleep}
                 disabled={pending}
-                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-line bg-raised text-[13.5px] font-medium text-ink transition-all hover:border-line-strong active:scale-[0.97] disabled:opacity-50"
+                className="mt-4 inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-line bg-raised text-[13.5px] font-medium text-ink transition-all hover:border-line-strong active:scale-[0.97]"
               >
                 <Moon size={15} /> {t.start_sleep}
-                {sleep.targetBedtime && <span className="ml-1 tabular-nums text-ink-3">· {sleep.targetBedtime}</span>}
               </button>
             </div>
           )}
         </section>
       </div>
 
-      {/* end-of-day review */}
+      {/* ── End-of-day review ── */}
       {(doneCount > 0 || pendingTasks.length > 0) && (
         <section className="card overflow-hidden animate-rise">
           <button
@@ -381,13 +388,9 @@ export function TodayView({
           >
             <h2 className="text-[13px] font-bold uppercase tracking-[0.09em] text-ink-3">{t.review_title}</h2>
             <div className="flex items-center gap-3 text-[12px] font-semibold text-ink-3">
-              <span className="text-success">
-                {doneCount} {t.stats_done}
-              </span>
-              <span>
-                {pendingTasks.length} {t.stats_left}
-              </span>
-              <ChevronDown size={15} className={cn("transition-transform duration-200", reviewOpen && "rotate-180")} />
+              <span className="text-success">{doneCount} {t.stats_done}</span>
+              <span>{pendingTasks.length} {t.stats_left}</span>
+              <ChevronDown size={15} className={cn("transition-transform", reviewOpen && "rotate-180")} />
             </div>
           </button>
           {reviewOpen && (
@@ -415,7 +418,7 @@ export function TodayView({
                         <button
                           onClick={() => moveToTomorrow(x.id)}
                           disabled={pending}
-                          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-[11px] font-semibold text-ink-2 transition-colors hover:border-line-strong hover:text-ink"
+                          className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-line px-2.5 py-1 text-[11px] font-semibold text-ink-2 hover:border-line-strong hover:text-ink"
                         >
                           <CalendarPlus2 size={11.5} /> {t.tomorrow}
                         </button>
@@ -428,8 +431,6 @@ export function TodayView({
           )}
         </section>
       )}
-
-      <TaskForm open={newTaskOpen} onClose={() => setNewTaskOpen(false)} task={null} defaultDate={today} goals={goals} />
     </div>
   );
 }

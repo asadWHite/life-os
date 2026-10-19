@@ -2,175 +2,153 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ------------------------------------------------------------------ */
-/* Life OS design tokens                                               */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* LifeOS TimeFlow — Design Tokens                                     */
+/* ================================================================== */
 
 @theme {
-  /* warm neutral ramp derived from #ADA996 / #F2F2F2 */
-  --color-canvas: #b7b2a3;
-  --color-surface: #d2cdc0;
-  --color-raised: #f2f2f2;
-  --color-sunken: #c8c3b4;
-  --color-line: #dfdbd0;
-  --color-line-strong: #c1bcad;
+  /* TimeFlow palette — warm ivory meets deep navy */
+  --color-canvas: #F4F1EA;
+  --color-surface: #EDEAE2;
+  --color-raised: #FFFFFF;
+  --color-sunken: #E6E3DA;
+  --color-line: #DBD8CE;
+  --color-line-strong: #C4C0B4;
 
-  --color-ink: #313028;
-  --color-ink-2: #625f54;
-  --color-ink-3: #8f8a7c;
+  --color-ink: #202833;
+  --color-ink-2: #5A5E66;
+  --color-ink-3: #77776F;
 
-  --color-accent: #ada996;
-  --color-accent-ink: #3a382f;
+  --color-accent: #FF633C;
+  --color-accent-ink: #FFFFFF;
 
-  --color-success: #3d7a52;
-  --color-success-bg: #e3efe5;
-  --color-warning: #a5781c;
-  --color-warning-bg: #f5ecd8;
-  --color-danger: #b04a3a;
-  --color-danger-bg: #f6e4e0;
+  --color-success: #3F8065;
+  --color-success-bg: #E3F0E8;
+  --color-warning: #C8943E;
+  --color-warning-bg: #F5ECD8;
+  --color-danger: #C65B55;
+  --color-danger-bg: #F6E4E0;
 
-  /* Focus lamp palette (spec §4.3) */
-  --color-lamp-slate: #202833;
-  --color-lamp-bg: #151b23;
-  --color-lamp-warm: #ff633c;
-  --color-lamp-glow: #ffb16a;
+  /* Navy surfaces (for feature cards, timeline) */
+  --color-navy: #202833;
+  --color-navy-2: #2B3440;
+  --color-navy-deep: #151B23;
 
   --radius-card: 1.25rem;
-  --shadow-card: 0 1px 2px rgba(28, 29, 26, 0.05), 0 8px 24px rgba(28, 29, 26, 0.06);
-  --shadow-float: 0 2px 6px rgba(28, 29, 26, 0.08), 0 20px 48px rgba(28, 29, 26, 0.14);
+  --shadow-card: 0 1px 3px rgba(32, 40, 51, 0.06), 0 8px 24px rgba(32, 40, 51, 0.08);
+  --shadow-float: 0 4px 12px rgba(32, 40, 51, 0.1), 0 20px 48px rgba(32, 40, 51, 0.16);
 
   --font-sans:
     -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Inter, Roboto,
     "Helvetica Neue", Arial, sans-serif;
 
-  --animate-rise: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-scale-in: scale-in 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-glow-pulse: glow-pulse 4.5s ease-in-out infinite;
+  --animate-rise: rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scale-in: scale-in 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @keyframes rise {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
   }
   @keyframes scale-in {
-    from { opacity: 0; transform: scale(0.94); }
+    from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
   }
-  @keyframes glow-pulse {
-    0%, 100% { opacity: 0.85; }
-    50% { opacity: 1; }
-  }
 }
 
-/* Dark appearance — layered warm-dark surfaces, never pure black */
+/* Dark mode */
 .dark {
-  --color-canvas: #191a19;
-  --color-surface: #20211f;
-  --color-raised: #282926;
-  --color-sunken: #151614;
-  --color-line: #33342f;
-  --color-line-strong: #45463e;
+  --color-canvas: #151B23;
+  --color-surface: #1E242D;
+  --color-raised: #2B3440;
+  --color-sunken: #121820;
+  --color-line: #2F3744;
+  --color-line-strong: #3D4654;
 
-  --color-ink: #efefe6;
-  --color-ink-2: #b4b5a6;
-  --color-ink-3: #7d7e71;
+  --color-ink: #F4F1EA;
+  --color-ink-2: #B0AFA7;
+  --color-ink-3: #77776F;
 
-  --color-accent: #d8d9c6;
-  --color-accent-ink: #1d1e17;
+  --color-accent: #FF633C;
+  --color-accent-ink: #FFFFFF;
 
-  --color-success: #7cc294;
-  --color-success-bg: #223528;
-  --color-warning: #d9ab4a;
-  --color-warning-bg: #39301c;
-  --color-danger: #e08a76;
-  --color-danger-bg: #40251f;
+  --color-success: #6ABF8A;
+  --color-success-bg: #1D3028;
+  --color-warning: #D9AB4A;
+  --color-warning-bg: #2E2818;
+  --color-danger: #E08A76;
+  --color-danger-bg: #3A2220;
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px rgba(0, 0, 0, 0.3);
-  --shadow-float: 0 2px 8px rgba(0, 0, 0, 0.45), 0 24px 56px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.3), 0 10px 28px rgba(0, 0, 0, 0.25);
+  --shadow-float: 0 4px 16px rgba(0, 0, 0, 0.4), 0 24px 56px rgba(0, 0, 0, 0.4);
 }
 
-html {
-  scroll-behavior: smooth;
-}
+/* ================================================================== */
+/* Base                                                                */
+/* ================================================================== */
+
+html { scroll-behavior: smooth; }
 
 body {
   font-family: var(--font-sans);
-  background:
-    radial-gradient(900px 500px at 20% 0%, rgba(242, 242, 242, 0.48), transparent 55%),
-    radial-gradient(900px 500px at 80% 100%, rgba(242, 242, 242, 0.28), transparent 58%),
-    linear-gradient(180deg, #b3ae9f 0%, #b8b3a5 34%, #c8c3b6 62%, #f2f2f2 100%);
+  background: var(--color-canvas);
   color: var(--color-ink);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  background-attachment: fixed;
-}
-
-.dark body {
-  background: var(--color-canvas);
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  background: color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
 
-/* ------------------------------------------------------------------ */
-/* Liquid glass (with solid fallback)                                  */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* Liquid Glass                                                        */
+/* ================================================================== */
 
 .glass {
-  background: color-mix(in srgb, var(--color-raised) 78%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-line) 80%, transparent);
+  background: color-mix(in srgb, var(--color-raised) 80%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-line) 60%, transparent);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
     var(--shadow-float);
 }
-@supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+@supports (backdrop-filter: blur(8px)) {
   .glass {
-    background: color-mix(in srgb, var(--color-raised) 62%, transparent);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    background: color-mix(in srgb, var(--color-raised) 65%, transparent);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
   }
 }
 .dark .glass {
-  background: color-mix(in srgb, var(--color-raised) 82%, transparent);
+  background: color-mix(in srgb, var(--color-raised) 75%, transparent);
   border-color: color-mix(in srgb, #ffffff 8%, transparent);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     var(--shadow-float);
 }
-@supports ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
-  .dark .glass {
-    background: color-mix(in srgb, var(--color-raised) 68%, transparent);
-  }
-}
+
+/* ================================================================== */
+/* Card                                                                */
+/* ================================================================== */
 
 .card {
-  background: linear-gradient(180deg, rgba(242, 242, 242, 0.88) 0%, rgba(232, 228, 219, 0.82) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.42);
-  border-radius: var(--radius-card);
-  box-shadow:
-    0 22px 48px rgba(54, 49, 39, 0.18),
-    0 2px 3px rgba(54, 49, 39, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.55);
-}
-
-.dark .card {
-  background: var(--color-surface);
+  background: var(--color-raised);
   border: 1px solid var(--color-line);
+  border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
 
-/* Visible, consistent focus indicator */
+/* ================================================================== */
+/* Focus & Accessibility                                               */
+/* ================================================================== */
+
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* Reduced motion: strip non-essential animation */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -178,21 +156,46 @@ body {
   }
 }
 
-/* Subtle scrollbar */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-line-strong) transparent;
-}
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-thumb { background: var(--color-line-strong); border-radius: 8px; }
+/* Scrollbar */
+* { scrollbar-width: thin; scrollbar-color: var(--color-line-strong) transparent; }
+*::-webkit-scrollbar { width: 6px; height: 6px; }
+*::-webkit-scrollbar-thumb { background: var(--color-line-strong); border-radius: 6px; }
 *::-webkit-scrollbar-track { background: transparent; }
 
+/* Input calendar icons */
 input[type="time"]::-webkit-calendar-picker-indicator,
 input[type="date"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.55;
+  cursor: pointer; opacity: 0.5;
 }
 .dark input[type="time"]::-webkit-calendar-picker-indicator,
 .dark input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.85);
+}
+
+/* ================================================================== */
+/* TimeFlow Timeline                                                   */
+/* ================================================================== */
+
+.tf-timeline-line {
+  position: absolute;
+  left: 19px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, var(--color-line) 0%, var(--color-accent) 50%, var(--color-line) 100%);
+  border-radius: 1px;
+}
+
+.tf-now-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 25%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 12%, transparent); }
 }

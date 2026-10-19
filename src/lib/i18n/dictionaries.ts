@@ -38,7 +38,7 @@ const uz = {
   landing_tag: "Shaxsiy hayot operatsion tizimi",
   landing_title: "Hayotingizni tartibga soling — soddaroq, xotirjam, aniq.",
   landing_sub:
-    "Life OS kunlik vazifalar, odatlar, uyqu rejimi, fokus chirog'i va real taraqqiyot statistikasini bitta xotirjam makonda birlashtiradi.",
+    "Life OS kunlik vazifalar, odatlar, uyqu rejimi, TimeFlow va real taraqqiyot statistikasini bitta xotirjam makonda birlashtiradi.",
   landing_cta: "Boshlash",
   landing_signin: "Kirish",
   landing_resume: "Ro'yxatdan o'tishni davom ettirish",
@@ -46,8 +46,8 @@ const uz = {
   feat_1_d: "Bugun nima muhim — vazifalar, ustuvorliklar va keyingi qadam bir qarashda.",
   feat_2_t: "Uyqu ritmi",
   feat_2_d: "Uyqu seanslarini yozing, maqsad bilan solishtiring, barqaror ritm yarating.",
-  feat_3_t: "Fokus chirog'i",
-  feat_3_d: "Rejalashtirilgan fokus vaqtida yonadigan sokin, aniq vizual holat.",
+  feat_3_t: "TimeFlow",
+  feat_3_d: "Kunlik rejangiz — vazifalar, vaqt va ustuvorliklar bir joyda.",
   feat_4_t: "Haqiqiy taraqqiyot",
   feat_4_d: "Statistika va yutuqlar faqat sizning yozuvlaringiz asosida.",
 
@@ -163,7 +163,7 @@ const uz = {
   brain_sleep_schedule: "Uyqu jadvalini sozlang — ritmni kuzatish osonlashadi.",
   brain_light_day: "Bugun kam vazifa rejaga kiritilgan — eng muhimini tanlang.",
 
-  focus_title: "Fokus chirog'i",
+  focus_title: "TimeFlow",
   focus_none: "Fokus rejalashtirilmagan",
   focus_schedule_cta: "Fokus rejalash",
   focus_edit: "Jadvalni o'zgartirish",
@@ -395,7 +395,7 @@ const en: Dict = {
   landing_tag: "Personal life operating system",
   landing_title: "Organize your life — calmer, clearer, simpler.",
   landing_sub:
-    "Life OS unites daily tasks, habits, sleep rhythm, the focus lamp, and honest progress in one calm place.",
+    "Life OS unites daily tasks, habits, sleep rhythm, TimeFlow, and honest progress in one calm place.",
   landing_cta: "Get started",
   landing_signin: "Sign in",
   landing_resume: "Continue onboarding",
@@ -403,8 +403,8 @@ const en: Dict = {
   feat_1_d: "What matters today — tasks, priorities, and the next step at a glance.",
   feat_2_t: "Sleep rhythm",
   feat_2_d: "Record sleep sessions, compare with your goal, build a steady rhythm.",
-  feat_3_t: "Focus lamp",
-  feat_3_d: "A calm visual state that lights up during your scheduled focus time.",
+  feat_3_t: "TimeFlow",
+  feat_3_d: "Your daily plan — tasks, time and priorities in one place.",
   feat_4_t: "Real progress",
   feat_4_d: "Statistics and achievements built only from your actual records.",
 
@@ -519,7 +519,7 @@ const en: Dict = {
   brain_sleep_schedule: "Set a sleep schedule — tracking your rhythm gets easier.",
   brain_light_day: "Few tasks planned for today — pick the one that matters most.",
 
-  focus_title: "Focus lamp",
+  focus_title: "TimeFlow",
   focus_none: "No focus scheduled",
   focus_schedule_cta: "Schedule focus",
   focus_edit: "Change schedule",
@@ -748,7 +748,7 @@ const ru: Dict = {
   landing_tag: "Персональная операционная система жизни",
   landing_title: "Организуйте жизнь — спокойнее, яснее, проще.",
   landing_sub:
-    "Life OS объединяет задачи, привычки, ритм сна, лампу фокуса и честный прогресс в одном спокойном месте.",
+    "Life OS объединяет задачи, привычки, ритм сна, TimeFlow и честный прогресс в одном спокойном месте.",
   landing_cta: "Начать",
   landing_signin: "Войти",
   landing_resume: "Продолжить настройку",
@@ -756,8 +756,8 @@ const ru: Dict = {
   feat_1_d: "Что важно сегодня — задачи, приоритеты и следующий шаг с первого взгляда.",
   feat_2_t: "Ритм сна",
   feat_2_d: "Записывайте сессии сна, сравнивайте с целью, выстраивайте стабильный ритм.",
-  feat_3_t: "Лампа фокуса",
-  feat_3_d: "Спокойный визуальный статус, загорающийся в запланированное время фокуса.",
+  feat_3_t: "TimeFlow",
+  feat_3_d: "Ваш дневной план — задачи, время и приоритеты в одном месте.",
   feat_4_t: "Честный прогресс",
   feat_4_d: "Статистика и достижения строятся только на ваших реальных записях.",
 
@@ -872,7 +872,7 @@ const ru: Dict = {
   brain_sleep_schedule: "Настройте расписание сна — следить за ритмом станет проще.",
   brain_light_day: "На сегодня мало задач — выберите самую важную.",
 
-  focus_title: "Лампа фокуса",
+  focus_title: "TimeFlow",
   focus_none: "Фокус не запланирован",
   focus_schedule_cta: "Запланировать фокус",
   focus_edit: "Изменить расписание",
